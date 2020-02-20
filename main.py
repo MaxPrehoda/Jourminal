@@ -1,14 +1,15 @@
-from datetime import datetime
+import arrow
 import os.path
 from os import path
 import json
-from dateutil import parser
 
 class JournalEntry():
     def __init__(self,content,creation_date=None):
+        utc = arrow.utcnow()
+        local = utc.to('US/Pacific')
         self._content = content
         if creation_date==None:
-            self._creation_date = datetime.now()
+            self._creation_date = local
         else:
             self._creation_date = creation_date
 
@@ -17,15 +18,15 @@ class JournalEntry():
    
     def content(self):
         return self._content
-   
+
     class JSONEncoder(json.JSONEncoder):
         DATE_FORMAT = "%Y-%m-%d"
         TIME_FORMAT = "%H:%M:%S"
         def default(self, o):
-            return {"_type": "journalentry", "entry_date":o._creation_date.strftime("%s %s" % (
+            return {"_type": "journalentry", "entry_date":o._creation_date.format('YYYY-MM-DD HH:mm:ss ZZ' % (
                     self.DATE_FORMAT, self.TIME_FORMAT
                 )),"content":o._content}
-       
+
     class JSONDecoder(json.JSONDecoder):
         def __init__(self, *args, **kwargs):
             json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
@@ -35,9 +36,9 @@ class JournalEntry():
                 return obj
             type = obj['_type']
             if type == 'journalentry':
-              return JournalEntry(obj['content'], parser.parse(obj['entry_date']))
+              return JournalEntry(obj['content'], obj['entry_date'])
             return obj
-       
+
 class EntryDB():
     def __init__(self,filename):
         self.file_name = filename
@@ -84,7 +85,7 @@ def browse_menu():
           browse_select = input("1. All entries\n2. Most recent entry")
           if browse_select == "1":
             for entry in db.get_all_entries():
-              print(f"{entry.creation_date().strftime('%a,%d,%B,%Y')} {entry.content()}")
+              print(f"{entry.creation_date()} {entry.content()}")
           elif browse_select == "2":
             pass
            # for entry in db.get_recent_entry():
