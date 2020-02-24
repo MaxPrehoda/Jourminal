@@ -23,9 +23,7 @@ class JournalEntry():
         DATE_FORMAT = "%Y-%m-%d"
         TIME_FORMAT = "%H:%M:%S"
         def default(self, o):
-            return {"_type": "journalentry", "entry_date":o._creation_date.format('YYYY-MM-DD HH:mm:ss ZZ' % (
-                    self.DATE_FORMAT, self.TIME_FORMAT
-                )),"content":o._content}
+            return {"_type": "journalentry", "entry_date":o._creation_date.format('YYYY-MM-DD HH:mm:ss'),"content":o._content}
 
     class JSONDecoder(json.JSONDecoder):
         def __init__(self, *args, **kwargs):
