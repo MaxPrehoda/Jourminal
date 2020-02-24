@@ -34,7 +34,7 @@ class JournalEntry():
                 return obj
             type = obj['_type']
             if type == 'journalentry':
-              return JournalEntry(obj['content'], obj['entry_date'])
+              return JournalEntry(obj['content'], arrow.get(obj['entry_date']))
             return obj
 
 class EntryDB():
@@ -62,7 +62,21 @@ class EntryDB():
 
 db = EntryDB("entries.db")
 
+def greeting():
+    entries=db.get_all_entries()
+    if entries:
+        time_humanized=entries[0].creation_date().humanize()
+        current=arrow.now()
+        if current.hour < 12:
+            date = 'morning'
+        elif current.hour > 12:
+            date = 'afternoon'
+        elif current.hour > 6:
+            date = 'evening'
+        return f"Good {date}, you last made an entry {time_humanized}"
+
 def menu():
+    print(greeting())
     while True:
         print("1. Make Entry\n2. Browse\n3. Quit")
         select = input()
@@ -88,8 +102,6 @@ def browse_menu():
             pass
            # for entry in db.get_recent_entry():
            #   print(f"{entry.creation_date()} {entry.content()}")
-
-   
 
 menu()
 
