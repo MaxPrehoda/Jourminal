@@ -1,0 +1,37 @@
+import arrow
+import os.path
+from os import path
+import json
+import entry_db
+
+class JournalEntry():
+    def __init__(self,content,creation_date=None):
+        utc = arrow.utcnow()
+        local = utc.to('US/Pacific')
+        self._content = content
+        if creation_date==None:
+            self._creation_date = local
+        else:
+            self._creation_date = creation_date
+
+    def creation_date(self):
+        return self._creation_date
+   
+    def content(self):
+        return self._content
+
+    class JSONEncoder(json.JSONEncoder):
+        def default(self, o):
+            return {"_type": "journalentry", "entry_date":o._creation_date.format('YYYY-MM-DD HH:mm:ss'),"content":o._content}
+
+    class JSONDecoder(json.JSONDecoder):
+        def __init__(self, *args, **kwargs):
+            json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
+
+        def object_hook(self, obj):
+            if '_type' not in obj:
+                return obj
+            type = obj['_type']
+            if type == 'journalentry':
+              return JournalEntry(obj['content'], arrow.get(obj['entry_date']))
+            return obj

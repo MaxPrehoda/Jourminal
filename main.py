@@ -1,70 +1,11 @@
-import re
 import arrow
 import os.path
 from os import path
 import json
+import entry_db
+import journal_entry
 
-class JournalEntry():
-    def __init__(self,content,creation_date=None):
-        utc = arrow.utcnow()
-        local = utc.to('US/Pacific')
-        self._content = content
-        if creation_date==None:
-            self._creation_date = local
-        else:
-            self._creation_date = creation_date
-
-    def creation_date(self):
-        return self._creation_date
-   
-    def content(self):
-        return self._content
-
-    class JSONEncoder(json.JSONEncoder):
-        DATE_FORMAT = "%Y-%m-%d"
-        TIME_FORMAT = "%H:%M:%S"
-        def default(self, o):
-            return {"_type": "journalentry", "entry_date":o._creation_date.format('YYYY-MM-DD HH:mm:ss'),"content":o._content}
-
-    class JSONDecoder(json.JSONDecoder):
-        def __init__(self, *args, **kwargs):
-            json.JSONDecoder.__init__(self, object_hook=self.object_hook, *args, **kwargs)
-
-        def object_hook(self, obj):
-            if '_type' not in obj:
-                return obj
-            type = obj['_type']
-            if type == 'journalentry':
-              return JournalEntry(obj['content'], arrow.get(obj['entry_date']))
-            return obj
-
-class EntryDB():
-    def __init__(self,filename):
-        self.file_name = filename
-        try:
-            
-            with open(self.file_name,"r") as dbfile:
-                self.entries_list = []
-                json_text = dbfile.read()
-                self.entries_list = json.loads(json_text,cls=JournalEntry.JSONDecoder)
-        except FileNotFoundError:
-            self.entries_list = [] #no file exists yet
-           
-    def add_entry(self,entry):
-        self.entries_list.insert(0,entry)
-      
-    def get_all_entries(self):
-      return self.entries_list
-   
-    def flush_to_disk(self):
-        json_text = json.dumps(self.entries_list,cls=JournalEntry.JSONEncoder)
-        with open(self.file_name,"w") as dbfile:
-            dbfile.write(json_text)
-    
-    def search(self,term):
-        return [i for i in self.entries_list if term in i.content()]
-
-db = EntryDB("entries.db")
+db = entry_db.EntryDB("entries.db")
 
 def greeting():
     entries=db.get_all_entries()
@@ -86,7 +27,7 @@ def menu():
         select = input()
         if select == "1":
             input_text = multi_input("How are you feeling today?")
-            entry = JournalEntry(input_text)
+            entry = journal_entry.JournalEntry(input_text)
             db.add_entry(entry)
             db.flush_to_disk()
         elif select == "2":
@@ -99,24 +40,28 @@ def browse_menu():
     entries=db.get_all_entries()
     while True:
         print("What entries would you like to view?")
-        browse_select = input("1. All entries\n2. Most recent entry\n3. Search \n4. Back")
+        browse_select = input("1. Browse\n2. Search \n4. Back")
         if browse_select == "1":
-            for entry in db.get_all_entries():
-                print(f"{entry.creation_date()} {entry.content()}")
+            for entry in entries:
+                if entry.creation_date().day == arrow.now().day:
+                    print(f"{entry.creation_date().humanize()} {entry.content()}")#not working meant to give better user expierance by showing a humanized time WHY DOES THIS NOT WORK?
+                else:
+                    print(f"{entry.creation_date().format('YYYY-MM-DD HH:mm:ss')} {entry.content()}")
         elif browse_select == "2":
-            print(entries[0].content()) #returns object L
-        elif browse_select == "3":
             print(search())
             break
-        elif browse_select == "4":
+        elif browse_select == "3":
             menu()
             break
 
 def search():
+    entries=db.get_all_entries()
     term = input("Search:")
-    return db.search(term)
+    for i in range(len(entries)):
+        return db.search(term)
 
 def multi_input(prompt=None):
+    #custom input function for multi-line entries
     if prompt:
         print(prompt)
     content = []
