@@ -1,3 +1,4 @@
+import re
 import arrow
 import os.path
 from os import path
@@ -58,7 +59,10 @@ class EntryDB():
     def flush_to_disk(self):
         json_text = json.dumps(self.entries_list,cls=JournalEntry.JSONEncoder)
         with open(self.file_name,"w") as dbfile:
-            dbfile.write(json_text)   
+            dbfile.write(json_text)
+    
+    def search(self,term):
+        return [i for i in self.entries_list if term in i.content()]
 
 db = EntryDB("entries.db")
 
@@ -81,7 +85,7 @@ def menu():
         print("1. Make Entry\n2. Browse\n3. Quit")
         select = input()
         if select == "1":
-            input_text = input("How are you feeling today?")
+            input_text = multi_input("How are you feeling today?")
             entry = JournalEntry(input_text)
             db.add_entry(entry)
             db.flush_to_disk()
@@ -92,16 +96,37 @@ def menu():
             return quit()
 
 def browse_menu():
+    entries=db.get_all_entries()
     while True:
-          print("What entries would you like to view?")
-          browse_select = input("1. All entries\n2. Most recent entry")
-          if browse_select == "1":
+        print("What entries would you like to view?")
+        browse_select = input("1. All entries\n2. Most recent entry\n3. Search \n4. Back")
+        if browse_select == "1":
             for entry in db.get_all_entries():
-              print(f"{entry.creation_date()} {entry.content()}")
-          elif browse_select == "2":
-            pass
-           # for entry in db.get_recent_entry():
-           #   print(f"{entry.creation_date()} {entry.content()}")
+                print(f"{entry.creation_date()} {entry.content()}")
+        elif browse_select == "2":
+            print(entries[0].content()) #returns object L
+        elif browse_select == "3":
+            print(search())
+            break
+        elif browse_select == "4":
+            menu()
+            break
+
+def search():
+    term = input("Search:")
+    return db.search(term)
+
+def multi_input(prompt=None):
+    if prompt:
+        print(prompt)
+    content = []
+    while True:
+        try:
+            line = input()
+            content.append(line)
+        except EOFError:
+            return "/n".join(content)
+
 
 menu()
 
