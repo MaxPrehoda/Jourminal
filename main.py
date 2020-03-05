@@ -39,12 +39,14 @@ def menu():
 def browse_menu():
     while True:
         print("What entries would you like to view?")
-        browse_select = input("1. Browse all\n2. Search \n4. Back")
+        browse_select = input("1. Browse all\n2. Text Search \n3. Date Search\n4. Back")
         if browse_select == "1":
             display_entries(db.get_all_entries())
         elif browse_select == "2":
             display_entries(search())
         elif browse_select == "3":
+            display_entries(search_date())
+        elif browse_select == "4":
             menu()
 
 def display_entries(entries):
@@ -53,6 +55,11 @@ def display_entries(entries):
             print(f"{entry.creation_date().humanize()} {entry.content()}")
         else:
             print(f"{entry.creation_date().format('YYYY-MM-DD HH:mm:ss')} {entry.content()}")
+
+def search_date():
+    usr_date = input("Enter day (MM-DD-YY):")
+    usr_date = arrow.get(usr_date, 'MM-DD-YY')
+    return db.search_date(usr_date.floor('day'),usr_date.ceil('day'))
 
 def search():
     term = input("Search:")
