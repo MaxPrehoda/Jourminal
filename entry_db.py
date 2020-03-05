@@ -29,3 +29,7 @@ class EntryDB():
     
     def search(self,term):
         return [i for i in self.entries_list if term in i.content()]
+
+    def search_date(self,start,end):
+        return [i for i in self.entries_list if start < i.creation_date() and end > i.creation_date()]
+        
