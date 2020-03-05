@@ -37,28 +37,26 @@ def menu():
             return quit()
 
 def browse_menu():
-    entries=db.get_all_entries()
     while True:
         print("What entries would you like to view?")
-        browse_select = input("1. Browse\n2. Search \n4. Back")
+        browse_select = input("1. Browse all\n2. Search \n4. Back")
         if browse_select == "1":
-            for entry in entries:
-                if entry.creation_date().day == arrow.now().day:
-                    print(f"{entry.creation_date().humanize()} {entry.content()}")#not working meant to give better user expierance by showing a humanized time WHY DOES THIS NOT WORK?
-                else:
-                    print(f"{entry.creation_date().format('YYYY-MM-DD HH:mm:ss')} {entry.content()}")
+            display_entries(db.get_all_entries())
         elif browse_select == "2":
-            print(search())
-            break
+            display_entries(search())
         elif browse_select == "3":
             menu()
-            break
+
+def display_entries(entries):
+    for entry in entries:
+        if entry.creation_date().day == arrow.now().day:
+            print(f"{entry.creation_date().humanize()} {entry.content()}")
+        else:
+            print(f"{entry.creation_date().format('YYYY-MM-DD HH:mm:ss')} {entry.content()}")
 
 def search():
-    entries=db.get_all_entries()
     term = input("Search:")
-    for i in range(len(entries)):
-        return db.search(term)
+    return db.search(term)
 
 def multi_input(prompt=None):
     #custom input function for multi-line entries
