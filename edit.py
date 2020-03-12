@@ -28,7 +28,7 @@ Features:
 Usage:
 edit.py <filename>
 
-"""
+""" 
 
 import sys
 from entry_db import EntryDB
