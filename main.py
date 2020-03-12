@@ -4,10 +4,12 @@ from os import path
 import json
 import entry_db
 import journal_entry
+from edit import EditDisplay
+from io import StringIO
+import urwid
 
-db = entry_db.EntryDB("entries.db")
 
-def greeting():
+def greeting(db):
     entries=db.get_all_entries()
     if entries:
         time_humanized=entries[0].creation_date().humanize()
@@ -21,7 +23,8 @@ def greeting():
         return f"Good {date}, you last made an entry {time_humanized}"
 
 def menu():
-    print(greeting())
+    db = entry_db.EntryDB("entries.db")
+    print(greeting(db))
     while True:
         print("1. Make Entry\n2. Browse\n3. Quit")
         select = input()
@@ -31,21 +34,21 @@ def menu():
             db.add_entry(entry)
             db.flush_to_disk()
         elif select == "2":
-            browse_menu()
+            browse_menu(db)
             break
         elif select == "3":
             return quit()
 
-def browse_menu():
+def browse_menu(db):
     while True:
         print("What entries would you like to view?")
         browse_select = input("1. Browse all\n2. Text Search \n3. Date Search\n4. Back")
         if browse_select == "1":
             display_entries(db.get_all_entries())
         elif browse_select == "2":
-            display_entries(search())
+            display_entries(search(db))
         elif browse_select == "3":
-            display_entries(search_date())
+            display_entries(search_date(db))
         elif browse_select == "4":
             menu()
 
@@ -56,12 +59,12 @@ def display_entries(entries):
         else:
             print(f"{entry.creation_date().format('YYYY-MM-DD HH:mm:ss')} {entry.content()}")
 
-def search_date():
+def search_date(db):
     usr_date = input("Enter day (MM-DD-YY):")
     usr_date = arrow.get(usr_date, 'MM-DD-YY')
     return db.search_date(usr_date.floor('day'),usr_date.ceil('day'))
 
-def search():
+def search(db):
     term = input("Search:")
     return db.search(term)
 
@@ -77,6 +80,24 @@ def multi_input(prompt=None):
         except EOFError:
             return "/n".join(content)
 
+class SaveHandler():
+    def __init__(self,entry,editor):
+        self.entry = entry
+        self.editor = editor
+    def unhandled_keypress(self,k):
+        if k == "f5":
+            self.entry.set_content(self.editor.get_text())
+        else:
+            self.editor.unhandled_keypress(k)
+def main():
+    db = entry_db.EntryDB("entries.db")
+    entry = db.get_all_entries()[0]
+    editor = EditDisplay(StringIO(entry.content()))
+    handler = SaveHandler(entry,editor)
+    loop = urwid.MainLoop(editor.view, editor.palette,
+        unhandled_input=handler.unhandled_keypress)
+    loop.run()
+    db.flush_to_disk()
 
-menu()
 
+main()

@@ -6,6 +6,7 @@ import entry_db
 
 class JournalEntry():
     def __init__(self,content,creation_date=None):
+        """Create JournalEntry object using a content string and an optional date. If date is None then it is set to the current time."""
         utc = arrow.utcnow()
         local = utc.to('US/Pacific')
         self._content = content
@@ -16,9 +17,12 @@ class JournalEntry():
 
     def creation_date(self):
         return self._creation_date
-   
+
     def content(self):
         return self._content
+
+    def set_content(self,content):
+        self._content = content
 
     class JSONEncoder(json.JSONEncoder):
         def default(self, o):
