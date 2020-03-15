@@ -58,38 +58,6 @@ class SaveHandler():
         else:
             self.editor.unhandled_keypress(k)
 
-class JournalApp:
-    palette = [
-        (None,  'light gray', 'black'),
-        ('heading', 'black', 'light gray'),
-        ('line', 'black', 'light gray'),
-        ('options', 'dark gray', 'black'),
-        ('focus heading', 'white', 'light blue'),#head choice colors
-        ('focus line', 'black', 'light blue'),#head choice colors
-        ('focus options', 'black', 'light gray'),
-        ('selected', 'white', 'dark blue')]
-    focus_map = {
-        'heading': 'focus heading',
-        'options': 'focus options',
-        'line': 'focus line'}
-
-    def __init__(self):
-        self.box_menus = HorizontalBoxes()
-        self.box_menus.open_box(menu_top.menu)
-        self.db = EntryDB("entries.db")
-        self.loop = urwid.MainLoop(urwid.Filler(top, 'middle', 10), palette)
-    
-    def run(self):
-        self.loop.start()
-    
-    def edit_new(self):
-        self.loop.stop()
-        editor = EditDisplay(StringIO(""))
-        handler = SaveHandler(None,editor)
-        loop = urwid.MainLoop(editor.view, editor.palette,
-            unhandled_input=handler.unhandled_keypress)
-        loop.run()
-
 def main2():
     app = JournalApp()
     menu_top = SubMenu(u'Pyjournal', [
