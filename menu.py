@@ -58,22 +58,6 @@ class SaveHandler():
         else:
             self.editor.unhandled_keypress(k)
 
-def main2():
-    app = JournalApp()
-    menu_top = SubMenu(u'Pyjournal', [
-        SubMenu(u'Entry', [
-            Choice(u'Make Entry',app.edit_new),
-            Choice(u'Edit Entry',None),
-        ]),
-        SubMenu(u'Views', [
-            SubMenu(u'Search Options', [
-                Choice(u'Search Date',None),
-                Choice(u'Search "Content"',None),
-            ]),
-            Choice(u'Browse All',None),
-        ]),
-    ])
-
 def main():
     top.open_box(menu_top.menu)
     urwid.MainLoop(urwid.Filler(top, 'middle', 10), palette).run()
