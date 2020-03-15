@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 import urwid
+top=None
 
 class MenuButton(urwid.Button):
     def __init__(self, caption, callback):
@@ -17,22 +19,25 @@ class SubMenu(urwid.WidgetWrap):
             urwid.AttrMap(line, 'line'),
             urwid.Divider()] + choices + [urwid.Divider()]))
         self.menu = urwid.AttrMap(listbox, 'options')
-        self.parent = None
 
     def open_menu(self, button):
-        self.parent.open_box(self.menu)
+        top.open_box(self.menu)
 
 class Choice(urwid.WidgetWrap):
-    def __init__(self, caption):
+    def __init__(self, caption,handler = None):
         super(Choice, self).__init__(
             MenuButton(caption, self.item_chosen))
+        self.handler = handler
         self.caption = caption
 
     def item_chosen(self, button):
-        response = urwid.Text([u'  You chose ', self.caption, u'\n'])
-        done = MenuButton(u'Ok', exit_program)
-        response_box = urwid.Filler(urwid.Pile([response, done]))
-        top.open_box(urwid.AttrMap(response_box, 'options'))
+        if self.handler == None:
+            response = urwid.Text([u'  You chose ', self.caption, u'\n'])
+            done = MenuButton(u'Ok', exit_program)
+            response_box = urwid.Filler(urwid.Pile([response, done]))
+            top.open_box(urwid.AttrMap(response_box, 'options'))
+        else:
+            self.handler(self.caption)
 
 def exit_program(key):
     raise urwid.ExitMainLoop()
@@ -64,8 +69,27 @@ class HorizontalMenu(urwid.Columns):
         self.focus_position = len(self.contents) - 1
 
 def horizontal_menu(menus): 
+    global top
     top = HorizontalMenu()
-    menus.parent = top
-    
-    top.open_box(menu_top.menu)
+    top.open_box(menus.menu)
     return urwid.Filler(top, 'middle', 10)
+
+def main():
+    menu_top = SubMenu(u'Main Menu', [
+    SubMenu(u'Applications', [
+        SubMenu(u'Accessories', [
+            Choice(u'Text Editor'),
+            Choice(u'Terminal'),
+        ]),
+    ]),
+    SubMenu(u'System', [
+        SubMenu(u'Preferences', [
+            Choice(u'Appearance'),
+        ]),
+        Choice(u'Lock Screen'),
+    ]),
+    ])
+    urwid.MainLoop(horizontal_menu(menu_top), HorizontalMenu.palette).run()
+
+if __name__ == "__main__":
+    main()
