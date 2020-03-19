@@ -18,37 +18,39 @@ class JournalApp:
 
     def __init__(self):
         self.db = EntryDB("entries.db")
-        entries_list = self.db.get_all_entries()
-        choice_list = []
-        for entry in entries_list:
-            ellipsis = '...' if len(entry.content()) > 5 else ''
-            choice_list.append(Choice(f"{entry.creation_date().format('YYYY-MM-DD HH:mm:ss')} {entry.content()}"[:25]+ellipsis, self.edit))
-           #if entry.creation_date().day == arrow.now().day:
-                #choice_list.append(Choice(f"{entry.creation_date().humanize(arrow.now())} {entry.content()}", self.edit_old))
-            #else:
-                #choice_list.append(Choice(f"{entry.creation_date().format('YYYY-MM-DD HH:mm:ss')} {entry.content()}"[:25], self.edit_old))
-        menu_top = SubMenu(u'Main Menu', [
-            Choice(u'New Entry',self.edit),
-            SubMenu(u'Browse', choice_list),
-        ])
-        self.box_menus = horizontal_menu(menu_top)
+        self.box_menus = self.make_menus()
         self.loop = urwid.MainLoop(self.box_menus, HorizontalMenu.palette + editor_palette,unhandled_input=self.unhandled_keypress)# EditDisplay.palette)
         self.current_entry = None
         self.editor = None
     
+    def make_menus(self):
+        browse_line_length = 40
+        entries_list = self.db.get_all_entries()
+        choice_list = []
+        for entry in entries_list:
+            if entry.creation_date().day == arrow.now().day:
+                date_string = entry.creation_date().humanize()
+            else:
+                date_string = entry.creation_date().format('YYYY-MM-DD HH:mm:ss')
+            ellipsis = '...' if len(entry.content()) > browse_line_length-len(date_string) else ''
+            choice_list.append(Choice(f"{date_string} {entry.content()}"[:browse_line_length]+ellipsis, self.edit, entry))
+        menu_top = SubMenu(u'Main Menu', [
+            Choice(u'New Entry',self.edit),
+            SubMenu(u'Browse', choice_list),
+        ])
+        return horizontal_menu(menu_top)
+
+
     def run(self):
         self.loop.run()
     
-    def edit(self,caption):
-        if caption == "New Entry":
+    def edit(self,caption,entry):
+        if entry == None:
             content = ""
             self.current_entry = None
         else:
-            d = arrow.get(caption[:19],'YYYY-MM-DD HH:mm:ss').replace(tzinfo='US/Pacific')
-            for i in self.db.get_all_entries():
-                if i.creation_date() == d:
-                    content = i.content()
-                    break
+            content = entry.content()
+            self.current_entry = entry
         self.editor = EditDisplay(StringIO(content))
         self.loop.widget = self.editor.view
 
@@ -64,6 +66,7 @@ class JournalApp:
                     self.current_entry.set_content(self.editor.get_text())
                     self.db.flush_to_disk()
             elif k == "f8":
+                self.box_menus = self.make_menus()
                 self.loop.widget = self.box_menus
             else:
                 self.editor.unhandled_keypress(k)

@@ -24,11 +24,12 @@ class SubMenu(urwid.WidgetWrap):
         top.open_box(self.menu)
 
 class Choice(urwid.WidgetWrap):
-    def __init__(self, caption,handler = None):
+    def __init__(self, caption,handler = None,info = None):
         super(Choice, self).__init__(
             MenuButton(caption, self.item_chosen))
         self.handler = handler
         self.caption = caption
+        self.info = info
 
     def item_chosen(self, button):
         if self.handler == None:
@@ -37,7 +38,7 @@ class Choice(urwid.WidgetWrap):
             response_box = urwid.Filler(urwid.Pile([response, done]))
             top.open_box(urwid.AttrMap(response_box, 'options'))
         else:
-            self.handler(self.caption)
+            self.handler(self.caption,self.info)
 
 def exit_program(key):
     raise urwid.ExitMainLoop()
