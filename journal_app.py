@@ -24,7 +24,7 @@ class JournalApp:
         self.editor = None
     
     def make_menus(self):
-        browse_line_length = 40
+        browse_line_length = 39
         entries_list = self.db.get_all_entries()
         choice_list = []
         for entry in entries_list:
@@ -39,7 +39,6 @@ class JournalApp:
             SubMenu(u'Browse', choice_list),
         ])
         return horizontal_menu(menu_top)
-
 
     def run(self):
         self.loop.run()

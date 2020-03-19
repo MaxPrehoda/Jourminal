@@ -8,7 +8,6 @@ class EntryDB():
     def __init__(self,filename):
         self.file_name = filename
         try:
-
             with open(self.file_name,"r") as dbfile:
                 self.entries_list = []
                 json_text = dbfile.read()
