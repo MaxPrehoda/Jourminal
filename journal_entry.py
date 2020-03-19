@@ -37,5 +37,5 @@ class JournalEntry():
                 return obj
             type = obj['_type']
             if type == 'journalentry':
-              return JournalEntry(obj['content'], arrow.get(obj['entry_date']))
+              return JournalEntry(obj['content'], arrow.get(obj['entry_date']).replace(tzinfo='US/Pacific'))
             return obj
