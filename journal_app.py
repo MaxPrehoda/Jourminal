@@ -33,12 +33,18 @@ class JournalApp:
             else:
                 date_string = entry.creation_date().format('YYYY-MM-DD HH:mm:ss')
             ellipsis = '...' if len(entry.content()) > browse_line_length-len(date_string) else ''
-            choice_list.append(Choice(f"{date_string} {entry.content()}"[:browse_line_length]+ellipsis, self.edit, entry))
+            choice_list.append(SubMenu(f"{date_string} {entry.content()}"[:browse_line_length]+ellipsis,[Choice("Edit Entry",self.edit,entry),Choice("Delete Entry",self.delete,entry)]))
         menu_top = SubMenu(u'Main Menu', [
             Choice(u'New Entry',self.edit),
             SubMenu(u'Browse', choice_list),
         ])
         return horizontal_menu(menu_top)
+
+    def delete(self,caption,entry):
+        self.db.delete_entry(entry)
+        self.db.flush_to_disk()
+        self.box_menus = self.make_menus()
+        self.loop.widget = self.box_menus
 
     def run(self):
         self.loop.run()
@@ -52,6 +58,7 @@ class JournalApp:
             self.current_entry = entry
         self.editor = EditDisplay(StringIO(content))
         self.loop.widget = self.editor.view
+
 
     def unhandled_keypress(self,k):
         if not self.loop.widget is self.box_menus:

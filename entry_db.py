@@ -31,3 +31,7 @@ class EntryDB():
 
     def search_date(self,start,end):
         return [i for i in self.entries_list if start < i.creation_date() and end > i.creation_date()]
+    
+    def delete_entry(self,entry):
+        self.entries_list.remove(entry)
+
