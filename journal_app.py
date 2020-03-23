@@ -37,6 +37,7 @@ class JournalApp:
         menu_top = SubMenu(u'Main Menu', [
             Choice(u'New Entry',self.edit),
             SubMenu(u'Browse', choice_list),
+            Choice('Exit', self.exit_app)
         ])
         return horizontal_menu(menu_top)
 
@@ -48,6 +49,10 @@ class JournalApp:
 
     def run(self):
         self.loop.run()
+    
+    def exit_app(self,caption,entry):
+        self.loop.stop()
+        quit()
     
     def edit(self,caption,entry):
         if entry == None:
