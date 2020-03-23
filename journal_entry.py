@@ -1,8 +1,5 @@
 import arrow
-import os.path
-from os import path
 import json
-import entry_db
 
 class JournalEntry():
     def __init__(self,content,creation_date=None):
