@@ -75,7 +75,7 @@ def horizontal_menu(menus):
     top.open_box(menus.menu)
     return urwid.Filler(top, 'middle', 10)
 
-def main():
+def main(): #test the menu system with this
     menu_top = SubMenu(u'Main Menu', [
     SubMenu(u'Applications', [
         SubMenu(u'Accessories', [

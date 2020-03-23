@@ -145,20 +145,16 @@ class EditDisplay:
         ('key','light cyan', 'dark blue', 'underline'),
         ]
 
-    footer_text = ('foot', [
-        "PyJournal    ",
-        ('key', "F5"), " save  ",
-        ('key', "F8"), " back",
-        ])
-
-    def __init__(self, name):
-        self.save_name = name
-        self.walker = LineWalker(name)
+    def __init__(self,file_like_object,header=None,footer=None):
+        self.save_name = file_like_object
+        self.walker = LineWalker(file_like_object)
         self.listbox = urwid.ListBox(self.walker)
-        self.footer = urwid.AttrWrap(urwid.Text(self.footer_text),
-            "foot")
+        if header:
+            header = urwid.AttrWrap(urwid.Text(header),"head")
+        if footer:
+            footer = urwid.AttrWrap(urwid.Text(footer),"foot")
         self.view = urwid.Frame(urwid.AttrWrap(self.listbox, 'body'),
-            footer=self.footer)
+            footer=footer,header=header)
 
     def main(self):
         self.loop = urwid.MainLoop(self.view, self.palette,

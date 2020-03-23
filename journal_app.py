@@ -11,10 +11,17 @@ editor_palette = [
     ('body','black','light cyan'),
     ('foot','dark cyan', 'dark blue', 'bold'),
     ('key','light cyan', 'dark blue', 'underline'),
+    ('head', 'dark cyan', 'dark blue', 'bold'),
     ]
 
 
 class JournalApp:
+
+    footer_text = ('foot', [
+        "PyJournal    ",
+        ('key', "F5"), " save  ",
+        ('key', "F8"), " back",
+    ])
 
     def __init__(self):
         self.db = EntryDB("entries.db")
@@ -41,6 +48,21 @@ class JournalApp:
         ])
         return horizontal_menu(menu_top)
 
+    def greeting(self):
+        entries = self.db.get_all_entries()
+        if entries:
+            time_humanized = entries[0].creation_date().replace(tzinfo='US/Pacific').humanize()
+            current = arrow.now()
+            if current.hour < 12:
+                date = 'morning'
+            elif current.hour > 18:
+                date = 'evening'
+            else:
+                date = 'afternoon'
+        return ("head", [
+            f"Good {date}, you last made an entry {time_humanized}"
+        ])
+
     def delete(self,caption,entry):
         self.db.delete_entry(entry)
         self.db.flush_to_disk()
@@ -58,10 +80,12 @@ class JournalApp:
         if entry == None:
             content = ""
             self.current_entry = None
+            header = self.greeting()
         else:
+            header = None
             content = entry.content()
             self.current_entry = entry
-        self.editor = EditDisplay(StringIO(content))
+        self.editor = EditDisplay(StringIO(content),header,JournalApp.footer_text)
         self.loop.widget = self.editor.view
 
 

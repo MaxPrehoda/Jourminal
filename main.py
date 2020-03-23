@@ -9,18 +9,7 @@ from io import StringIO
 import urwid
 
 
-def greeting(self,db):
-    entries=db.get_all_entries()
-    if entries:
-        time_humanized=entries[0].creation_date().humanize()
-        current=arrow.now()
-        if current.hour < 12:
-            date = 'morning'
-        elif current.hour > 12:
-            date = 'afternoon'
-        elif current.hour > 6:
-            date = 'evening'
-        return f"Good {date}, you last made an entry {time_humanized}"
+
 
 def menu(self):
     db = entry_db.EntryDB("entries.db")
