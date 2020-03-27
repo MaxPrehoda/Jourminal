@@ -9,6 +9,13 @@ class MenuButton(urwid.Button):
         self._w = urwid.AttrMap(urwid.SelectableIcon(
             [u'  \N{BULLET} ', caption], 2), None, 'selected')
 
+class EditField(urwid.Edit):
+    def __init__(self, caption, callback):
+        super(EditField, self).__init__("")
+        urwid.connect_signal(self, 'postchange', callback)
+        self._w = urwid.AttrMap(urwid.SelectableIcon(
+            [u'  \N{BULLET} ', caption], 2), None, 'selected')
+
 class SubMenu(urwid.WidgetWrap):
     def __init__(self, caption, choices):
         super(SubMenu, self).__init__(MenuButton(
@@ -22,6 +29,32 @@ class SubMenu(urwid.WidgetWrap):
 
     def open_menu(self, button):
         top.open_box(self.menu)
+
+
+class EditMenu(urwid.WidgetWrap):
+    def __init__(self, caption, callback):
+        super(EditMenu, self).__init__(EditField(
+            [caption, u"\N{HORIZONTAL ELLIPSIS}"], self.text_changed))
+        self.callback = callback
+
+    def text_changed(self,edit_widget,text2):
+        pass
+        #quit()
+        #if edit_widget.text == "\n":
+        #    self.callback(edit_widget,text2)
+
+    def keypress(self,size,key):
+        if key == 'enter':
+            choices = self.callback(self._w.text)
+            line = urwid.Divider(u'\N{LOWER ONE QUARTER BLOCK}')
+            listbox = urwid.ListBox(urwid.SimpleFocusListWalker([
+            urwid.AttrMap(urwid.Text([u"\n  ", "Search Results"]), 'heading'),
+            urwid.AttrMap(line, 'line'),
+            urwid.Divider()] + choices + [urwid.Divider()]))
+            top.open_box(urwid.AttrMap(listbox, 'options'))
+        else:
+            self._wrapped_widget.keypress(size,key)
+
 
 class Choice(urwid.WidgetWrap):
     def __init__(self, caption,handler = None,info = None):

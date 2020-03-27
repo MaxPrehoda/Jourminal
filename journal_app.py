@@ -4,7 +4,7 @@ from entry_db import EntryDB
 from journal_entry import JournalEntry
 import urwid
 from edit import EditDisplay
-from horizontal_menu import horizontal_menu,HorizontalMenu,SubMenu,Choice
+from horizontal_menu import horizontal_menu,HorizontalMenu,SubMenu,Choice,EditMenu
 from io import StringIO
 
 editor_palette = [
@@ -13,7 +13,6 @@ editor_palette = [
     ('key','light cyan', 'dark blue', 'underline'),
     ('head', 'dark cyan', 'dark blue', 'bold'),
     ]
-
 
 class JournalApp:
 
@@ -44,6 +43,7 @@ class JournalApp:
         menu_top = SubMenu(u'Main Menu', [
             Choice(u'New Entry',self.edit),
             SubMenu(u'Browse', choice_list),
+            EditMenu("Search", self.search),
             Choice('Exit', self.exit_app)
         ])
         return horizontal_menu(menu_top)
@@ -62,6 +62,22 @@ class JournalApp:
         return ("head", [
             f"Good {date}, you last made an entry {time_humanized}"
         ])
+
+    def search(self,text):
+        browse_line_length = 39
+        entries_list = self.db.get_all_entries()
+        choice_list = []
+        for entry in entries_list:
+            if text in entry.content():
+                if entry.creation_date().day == arrow.now().day:
+                    date_string = entry.creation_date().humanize()
+                else:
+                    date_string = entry.creation_date().format('YYYY-MM-DD HH:mm:ss')
+                ellipsis = '...' if len(
+                    entry.content()) > browse_line_length-len(date_string) else ''
+                choice_list.append(SubMenu(f"{date_string} {entry.content()}"[:browse_line_length]+ellipsis, [
+                                Choice("Edit Entry", self.edit, entry), Choice("Delete Entry", self.delete, entry)]))
+        return choice_list
 
     def delete(self,caption,entry):
         self.db.delete_entry(entry)
