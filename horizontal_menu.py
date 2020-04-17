@@ -52,6 +52,8 @@ class EditMenu(urwid.WidgetWrap):
             urwid.AttrMap(line, 'line'),
             urwid.Divider()] + choices + [urwid.Divider()]))
             top.open_box(urwid.AttrMap(listbox, 'options'))
+        elif key in ('up','down'):
+            return key
         else:
             self._wrapped_widget.keypress(size,key)
 
