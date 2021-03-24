@@ -1,5 +1,5 @@
 # Journal-app
-Python program for journaling within your terminal.
+Curses for journaling within your terminal.
 -
 Urwid Docs: http://urwid.org/ (Terminal Manipulation), 
 Arrow Docs: https://arrow.readthedocs.io/ (Date/time library used, imo much better than datetime lib)
