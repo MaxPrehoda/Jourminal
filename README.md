@@ -1,4 +1,7 @@
 # Jourminal
+
+Due to Journimals use of Urwid and the nature of the FCNTL interface this script only works on Mac or terminals like cygwin on Windows
+
 Curses for journaling within your terminal.
 -
 Urwid Docs: http://urwid.org/ (Curses lib), 
